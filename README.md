@@ -6,7 +6,7 @@ I'd like to note that this project is not fully complete and it would need furth
 don't have time for that. Also it can't download high resolutions like 1080p because youtube doesn't combine audio
 and video at that resolution (it is seperated into two streams). You would have to download both video and audio seperately
 and then combine it with some audio converter like ffmpeg. I use pytube and pydub for this project and
-as you can see ffmpeg is directly included.
+as you can see ffmpeg is directly included. 
 
 ## Install
 0. Requirements: Python runtime environment
@@ -15,4 +15,6 @@ as you can see ffmpeg is directly included.
 3. Run down.bat (simple loop to directly download the next vid)
 4. Enter Link & Filename without extension
 5. Video / audio is located in ./data
+
+Thanks to the devs of pytube, pydub and ffmpeg <3
  ...
