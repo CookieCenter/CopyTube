@@ -19,5 +19,4 @@ select a mime_type, but it is not necessary.
 4. Enter Link & Filename without extension
 5. Video / audio is located in ./data
 
-Thanks to the devs of pytube, pydub and ffmpeg <3
- ...
+Thanks to the devs of pytube, pydub and ffmpeg ❤️ ...
