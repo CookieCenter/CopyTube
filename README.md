@@ -1,6 +1,6 @@
 # CopyTube
 ## About
-Download videos from Youtube. I wanted to keep it simple, so it is a simple commandline application.
+Youtube download. I wanted to keep it simple, so it is a simple commandline application.
 Enter the link, then enter the filename without extension.
 I'd like to note that this project is not fully complete and it would need further completion but I
 don't have time for that. Also it can't download high resolutions like 1080p because youtube doesn't combine audio
