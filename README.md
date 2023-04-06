@@ -1,6 +1,7 @@
 # CopyTube
 ## About
-Get vid from Youtube ...
+Get vid from Youtube. 
+Easily download Youtube videos with CopyTube.
 
 ## What
 * Simple commandline application
