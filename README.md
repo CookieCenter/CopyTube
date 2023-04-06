@@ -26,8 +26,8 @@ of the video, if you enable debug. I think the rest speaks for itself.
 
 ## How to get vid
 * Run `Down.bat`
-* Enter *Link
-* Enter *Name
+* Enter *Link*
+* Enter *Name*
 * It then **repeats itself** because of the batch script
 
 Thanks to pytube & pydub & ffmpeg ❤️ ...
