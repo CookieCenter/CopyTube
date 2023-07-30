@@ -1,21 +1,22 @@
 from pytube import YouTube
-from pydub import AudioSegment
 
 import configparser
+import os
+import datetime
 
 # Create config
 config = configparser.ConfigParser()
 config.read('prop.cfg')
 
+enter_name = config['main']['enter_name']
+auto = config['main']['auto_select']
+
+print('[ Download ]')
 link = input("[ Download ] Enter Link -> ")
 # Filename without extension
-name = input("[ Download ] Enter FileName -> ")
-
-audio = config['main']['only_audio']
-convert = config['main']['convert_to_audio']
-debug = config['main']['debug']
-
-import os
+name = ''
+if enter_name == 'True':
+    name = input("[ Download ] Enter FileName -> ")
 
 try:
     os.mkdir(config['main']['path'])
@@ -27,110 +28,114 @@ try:
 except:
     pass
 
-import datetime
+def crash_path():
+    return 'crash/' + str(datetime.datetime.now()).replace(':', '-').replace('.', '-')
 
-def log(msg):
-    file_name = 'crash/' + str(datetime.datetime.now()).replace(':', '-').replace('.', '-')
-    if not os.path.exists(file_name):
-        file = open(file_name, "w")
-        file.write(msg)
-
-path = config['main']['path'] + name + '.'
-
-# Audio
-mime_aud = config['audio']['mime_type']
-aud_ext = config['audio']['ext']
-abr = config['audio']['abr']
-
-# Video
-mime_vid = config['video']['mime_type']
-vid_ext = config['video']['ext']
-res = config['video']['res']
+def log_exception(e):
+    p = crash_path()
+    f = open(p, "w")
+    f.write(str(e))
+    exit()
 
 print("[ Download ] Starting ...")
 
-yt = None
-stream = None
+def print_vs(vs):
+    print('[ Download ] res =', vs.resolution, '| fps =', vs.fps, '| mime =', vs.mime_type)
 
-down_file_name = ''
+def print_vs_ls(vs_ls):
+    for idx in range(0, len(vs_ls)):
+        vs = vs_ls[idx]
+        print('[ Download ] [', idx, '] res =', vs.resolution, '| fps =', vs.fps, '| mime =', vs.mime_type)
+
+def print_as(a_s):
+    print('[ Download ] abr =', a_s.abr, '| mime =', a_s.mime_type)
+
+def print_as_ls(as_ls):
+    for idx in range(0, len(as_ls)):
+        a_s = as_ls[idx]
+        print('[ Download ] [', idx, '] abr =', a_s.abr, '| mime =', a_s.mime_type)
+
+yt = None
+try:
+    yt = YouTube(link)
+except Exception as e:
+    print('[ Download ] Link does not work ...')
+    log_exception(e)
+
+if enter_name == 'False':
+    name = yt.streams[0].title
+
+path = config['main']['path'] + name + '.'
+
+vs_ls = yt.streams.filter(type='video')
+vs_ls = vs_ls.order_by('resolution')
+vs = None
+if auto == 'False':
+    print('[ Download ]')
+    print('[ Download ] > Select video stream <')
+    print_vs_ls(vs_ls)
+    try:
+        vs = vs_ls[int(input('[ Download ] Enter index -> '))]
+    except Exception as e:
+        print('[ Download ] Enter an index ...')
+        log_exception(e)
+else:
+    vs = vs_ls[-1]
+print('[ Download ]')
+print('[ Download ] > Selected video stream <')
+print_vs(vs)
+
+as_ls = yt.streams.filter(type='audio')
+as_ls = as_ls.order_by('abr')
+a_s = None
+if auto == 'False':
+    print('[ Download ]')
+    print('[ Download ] > Select audio stream <')
+    print_as_ls(as_ls)
+    try:
+        a_s = as_ls[int(input('[ Download ] Enter index -> '))]
+    except Exception as e:
+        print('[ Download ] Enter an index ...')
+        log_exception(e)
+else:
+    a_s = as_ls[-1]
+print('[ Download ]')
+print('[ Download ] > Selected audio stream <')
+print_as(a_s)
+
+v_ext = vs.mime_type.split('/')[1]
+a_ext = a_s.mime_type.split('/')[1]
+
+vs_p = path + v_ext + '.vs'
+as_p = path + a_ext + '.as'
+
+print('[ Download ]')
+print('[ Download ] > Download starting <')
 
 try:
-    try:
-        yt = YouTube(link)
-    except Exception as exception:
-        log(str(exception))
-        print('[ Download ] Link does not work ...')
+    vs.download(output_path=None, filename=vs_p)
+    a_s.download(output_path=None, filename=as_p)
+except Exception as e:
+    print('[ Download ] There was an error during download ...')
+    log_exception(e)
 
-    if debug == 'True':
-        print('[ Download ] Stream list ...')
-        for stream in yt.streams:
-            if stream.type == 'video':
-                print('[ Download ] -> Mime_type =', stream.mime_type, '| Res =', stream.resolution, '| Fps =', stream.fps)
-            if stream.type == 'audio':
-                print('[ Download ] -> Mime_type =', stream.mime_type, '| Bitrate =', stream.abr)
+a_p = path + 'mp3'
+v_p = path + 'mp4'
+
+from subprocess import DEVNULL, STDOUT, check_call, Popen
+
+print('[ Convert ] Starting ...')
+print('[ Convert ] Getting audio ...')
+p = crash_path() + '.txt'
+f = open(p, "w")
+
+Popen('ffmpeg -y -i ' + as_p + ' ' + a_p, stdout=f, stderr=STDOUT, shell=True)
+
+print('[ Convert ] Getting video ...')
+p = crash_path() + '.txt'
+f = open(p, "w")
+
+Popen('ffmpeg -y -i ' + vs_p + ' -i ' + as_p + ' -c:v copy -c:a aac ' + v_p, stdout=f, stderr=STDOUT, shell=True)
+
+print('[ Convert ] Finished ...')
     
-    if audio == 'True':
-        stream = None
-
-        print('[ Download ] Bitrate -', abr, '| Mime_type -', mime_aud)
-        stream_ls = yt.streams.filter(only_audio=True, mime_type=mime_aud, abr=abr)
-        if len(stream_ls) > 0:
-            stream = stream_ls.first()
-        else:
-            print('[ Download ] No stream found -> Trying other bitrate ...')
-            stream_ls = yt.streams.filter(only_audio=True, mime_type=mime_aud)
-
-            if len(stream_ls) > 0:
-                stream = stream_ls.first()
-            else:
-                print('[ Download ] No stream found -> Maybe Mimetype wrong ...')
-                stream_ls = yt.streams.filter(only_audio=True)
-
-                if len(stream_ls) > 0:
-                    print('[ Download ] Chosing first stream without filter ...')
-                    stream = stream_ls.first()
-                else:
-                    print('[ Download ] No stream found at all ...')
-
-        down_file_name = path + 'tmp'
-        stream.download(output_path=None, filename=down_file_name)
-    else:
-        stream = None
-
-        print('[ Download ] Resolution -', res, '| Mime_type -', mime_vid)
-        stream_ls = yt.streams.filter(mime_type=mime_vid, res=res)
-        if len(stream_ls) > 0:
-            stream = stream_ls.first()
-        else:
-            print('[ Download ] No stream found -> Trying other resolution ...')
-            stream_ls = yt.streams.filter(mime_type=mime_vid)
-
-            if len(stream_ls) > 0:
-                stream = stream_ls.first()
-            else:
-                print('[ Download ] No stream found -> Maybe Mimetype wrong ...')
-                stream_ls = yt.streams
-
-                if len(stream_ls) > 0:
-                    print('[ Download ] Chosing first stream without filter ...')
-                    stream = stream_ls.first()
-                else:
-                    print('[ Download ] No stream found at all ...')
-
-        down_file_name = path + vid_ext
-        stream.download(output_path=None, filename=down_file_name)
-    
-    print("[ Download ] Finished ...")
-except Exception as exception:
-    log(str(exception))
-    print('[ Download ] Err ...')
-
-if convert == 'True':
-    print('[ Convert ] Starting ...')
-    try:
-        AudioSegment.from_file(down_file_name).export(path + aud_ext, format=aud_ext)
-        print('[ Convert ] Finished ...')
-    except Exception as exception:
-        log(str(exception))
-        print('[ Convert ] Err, probably audio missing ...')
-        print('[ Convert ] At higher res, video and audio is seperate ...')
