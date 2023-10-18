@@ -1,4 +1,5 @@
 ## ⚠️ Deprecated ⚠️
+This will be entirely rewritten once I'm finished with my current projects and studies.
 # CopyTube
 ## About
 Get vid from Youtube. 
