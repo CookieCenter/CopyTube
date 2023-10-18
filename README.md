@@ -1,3 +1,4 @@
+## ⚠️ Deprecated ⚠️
 # CopyTube
 ## About
 Get vid from Youtube. 
